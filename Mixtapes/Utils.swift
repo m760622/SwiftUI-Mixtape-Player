@@ -28,7 +28,6 @@ func checkSongUrlIsReachable(song: Song) -> Bool {
         print(error)
         return false
     }
-   
 }
 
 func checkItemUrlIsReachable(playerItem: AVPlayerItem) -> Bool {
@@ -45,7 +44,6 @@ func checkItemUrlIsReachable(playerItem: AVPlayerItem) -> Bool {
     } else {
         return false
     }
-   
 }
 
 func getArrayOfSongNames(arrayOfPlayerItems: [AVPlayerItem]) -> [String] {
@@ -58,7 +56,6 @@ func getArrayOfSongNames(arrayOfPlayerItems: [AVPlayerItem]) -> [String] {
     return arrayOfSongNames
 }
 
-
 func getArrayOfSongNames(arrayOfSongs: [Song]) -> [String] {
     // returns an array of all song names given an array of Song
     
@@ -69,7 +66,6 @@ func getArrayOfSongNames(arrayOfSongs: [Song]) -> [String] {
     return arrayOfSongNames
 }
 
-
 func loadPlayer(arrayOfPlayerItems: [AVPlayerItem], player: AVQueuePlayer) {
     // Removes all item from an AVQueuePlayer then loads an it with an array of AVPlayerItem
     
@@ -78,7 +74,6 @@ func loadPlayer(arrayOfPlayerItems: [AVPlayerItem], player: AVQueuePlayer) {
         player.insert(item, after: nil)
     }
 }
-
 
 func createArrayOfPlayerItems(songs: [Song]) -> [AVPlayerItem] {
     // Given an array of Song return an array of AVPlayerItem
@@ -90,7 +85,6 @@ func createArrayOfPlayerItems(songs: [Song]) -> [AVPlayerItem] {
     }
     return arrayOfPlayerItems
 }
-
 
 func getItemName(playerItem: AVPlayerItem?) -> String {
     // Returns the name of song in AVPlayerItem
@@ -118,7 +112,6 @@ func getIsPlaying(status: AVPlayer.TimeControlStatus?) -> Bool {
     } else {
         return false
     }
-        
 }
 
 func getUrlFromPlayerItem(playerItem: AVPlayerItem) -> URL? {
@@ -128,9 +121,6 @@ func getUrlFromPlayerItem(playerItem: AVPlayerItem) -> URL? {
      } else {
         return nil
     }
-       
-    
-    
 }
 
 
