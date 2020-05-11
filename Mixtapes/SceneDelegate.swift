@@ -14,6 +14,7 @@ import MediaPlayer
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
+    let player = AVQueuePlayer()
 
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
@@ -26,9 +27,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         // Create the SwiftUI view and set the context as the value for the managedObjectContext environment keyPath.
         // Add `@Environment(\.managedObjectContext)` in the views that will need the context.
-        let player = AVQueuePlayer()
-        let playerItemObserver = PlayerItemObserver(player: player)
-        let playerStatusObserver = PlayerStatusObserver(player: player)
+        let playerItemObserver = PlayerItemObserver(player: self.player)
+        let playerStatusObserver = PlayerStatusObserver(player: self.player)
+        self.setupRemoteTransportControls()
 
         // Get the singleton instance.
           let audioSession = AVAudioSession.sharedInstance()
@@ -38,8 +39,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
           } catch {
               print("Failed to set audio session category.")
           }
+        
+        
 
-        let contentView = ContentView(queuePlayer: player, playerItemObserver: playerItemObserver, playerStatusObserver: playerStatusObserver).environment(\.managedObjectContext, context)
+        let contentView = ContentView(queuePlayer: self.player, playerItemObserver: playerItemObserver, playerStatusObserver: playerStatusObserver).environment(\.managedObjectContext, context)
 
         // Use a UIHostingController as window root view controller.
         if let windowScene = scene as? UIWindowScene {
@@ -81,6 +84,42 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         (UIApplication.shared.delegate as? AppDelegate)?.saveContext()
     }
 
+    
+    func setupRemoteTransportControls() {
+        // Get the shared MPRemoteCommandCenter
+        let commandCenter = MPRemoteCommandCenter.shared()
 
+        // Add handler for Play Command
+        commandCenter.playCommand.addTarget { [unowned self] event in
+            if self.player.rate == 0.0 {
+                self.player.play()
+                return .success
+            }
+            return .commandFailed
+        }
+
+        // Add handler for Pause Command
+        commandCenter.pauseCommand.addTarget { [unowned self] event in
+            if self.player.rate == 1.0 {
+                self.player.pause()
+                return .success
+            }
+            return .commandFailed
+        }
+        
+        // Add handler for Skip Command
+        commandCenter.nextTrackCommand.addTarget { [unowned self] event in
+            
+            if let item =  self.player.currentItem {
+                self.player.pause()
+                item.seek(to: CMTime.zero, completionHandler: nil)
+                self.player.advanceToNextItem()
+                self.player.play()
+                return .success
+            }
+            return .commandFailed
+        }
+        
+    }
 }
 
