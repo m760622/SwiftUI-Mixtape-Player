@@ -19,7 +19,7 @@ struct ContentView: View {
     @State var isPlaying: Bool = false
     @State private var showingNowPlayingSheet: Bool = false
     @State var currentSongName: String = "Not Playing"
-    @State var currentMixTapeImage: URL  = URL.init(fileURLWithPath: "")
+    @State var currentMixTapeImage: URL = URL.init(fileURLWithPath: "")
     @State var currentMixTapeName: String  = ""
     @State var currentPlayerItems: [AVPlayerItem] = []
     let queuePlayer: AVQueuePlayer
@@ -287,15 +287,6 @@ struct MixTapeView: View {
         } catch {
             print(error)
         }
-        
-        // if the mixtape user is rearanging is the current tape, stop playback and reload queuePlayer
-        if self.currentMixTapeName == self.mixTape.wrappedTitle {
-            if self.isPlaying {
-                self.queuePlayer.pause()
-            }
-            let playerItems = createArrayOfPlayerItems(songs: self.songs)
-            loadPlayer(arrayOfPlayerItems: playerItems, player: self.queuePlayer)
-        }
     }
     
     func deleteSong(offsets: IndexSet) {
@@ -324,22 +315,14 @@ struct MixTapeView: View {
         } catch {
             print(error)
         }
-        
-         // if the mixtape user is deleteing songs from is the current tape, stop playback and reload queuePlayer
-        if self.currentMixTapeName == self.mixTape.wrappedTitle {
-            if self.isPlaying {
-                self.queuePlayer.pause()
-            }
-            let playerItems = createArrayOfPlayerItems(songs: self.songs)
-            loadPlayer(arrayOfPlayerItems: playerItems, player: self.queuePlayer)
-        }
     }
 }
 
 // MARK: PlayerView
 
 struct PlayerView: View {
-    // This view appears in a sheet triggerd by the NowPlayingButtonView, it displays name of current song and its mixtape, and controlls for play/pause and skip forward/backward.
+    // This view appears in a sheet triggerd by the NowPlayingButtonView, it displays name of current song and its mixtape,
+    // and controlls for play/pause and skip forward/backward.
     
     @Binding var isPlaying: Bool
     @Binding var currentSongName: String
@@ -355,18 +338,17 @@ struct PlayerView: View {
         GeometryReader { geometry in
             VStack(spacing: 24) {
                 if self.currentMixTapeName != "" {
- 
-                Image(uiImage: getCoverArtImage(url: self.currentMixTapeImage))
-                     .resizable()
-                     .frame(width: geometry.size.width - 24, height: geometry.size.width - 24)
-                     .shadow(radius: 10)
+                    Image(uiImage: getCoverArtImage(url: self.currentMixTapeImage))
+                         .resizable()
+                         .frame(width: geometry.size.width - 24, height: geometry.size.width - 24)
+                         .shadow(radius: 10)
 
                 } else {
                     Image(systemName: "hifispeaker.fill")
-                    .resizable()
-                    .frame(width: geometry.size.width - 24, height: geometry.size.width - 24)
-                    .cornerRadius(20)
-                    .shadow(radius: 10)
+                        .resizable()
+                        .frame(width: geometry.size.width - 24, height: geometry.size.width - 24)
+                        .cornerRadius(20)
+                        .shadow(radius: 10)
                 }
 
                 
@@ -484,22 +466,6 @@ struct PlayerView: View {
                                 .foregroundColor(.white)
                                 .font(.system(.title))
                         }
-                    }
-                }
-            }
-        }
-    }
-}
-
-
-
-extension UIImageView {
-    func load(url: URL) {
-        DispatchQueue.global().async { [weak self] in
-            if let data = try? Data(contentsOf: url) {
-                if let image = UIImage(data: data) {
-                    DispatchQueue.main.async {
-                        self?.image = image
                     }
                 }
             }
