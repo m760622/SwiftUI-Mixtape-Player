@@ -10,11 +10,14 @@ import Foundation
 import AVKit
 import CoreData
 
-func getColorFor(song: Song, player: AVQueuePlayer) -> UIColor {
-    if song.wrappedName == getItemName(playerItem: player.currentItem) {
-        return .red
-    } else {
-        return .white
+func getCoverArtImage(url: URL) -> UIImage {
+    // returns a UIImage to display as cover art in PlayerView
+    
+    do {
+        let imageData = try Data(contentsOf: url)
+        return UIImage(data: imageData)!
+    } catch {
+        return UIImage(systemName: "hifispeaker")!
     }
 }
 

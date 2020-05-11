@@ -20,9 +20,29 @@ extension MixTape {
     @NSManaged public var title: String?
     @NSManaged public var songs: NSOrderedSet?
     @NSManaged public var numberOfSongs: Int16
+    @NSManaged public var urlData: Data?
     
     public var wrappedTitle: String {
         self.title ?? "Unknown MixTape Title"
+    }
+    
+    public var wrappedUrl: URL {
+        // return the url that's stored as bookmark data in CoreData db
+        
+        if let data = self.urlData {
+            var isStale = false
+            do {
+                let url = try URL.init(resolvingBookmarkData: data, bookmarkDataIsStale: &isStale)
+                return url
+            } catch {
+                print(error)
+                return URL.init(fileURLWithPath: "No url")
+            }
+        } else {
+            return URL.init(fileURLWithPath: "No url")
+        }
+        
+
     }
     
     public var songsArray: [Song] {

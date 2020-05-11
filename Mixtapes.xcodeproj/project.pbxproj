@@ -23,6 +23,7 @@
 		A31716E324626485003AE0C2 /* MixTape+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = A31716DF24626485003AE0C2 /* MixTape+CoreDataClass.swift */; };
 		A31716E424626485003AE0C2 /* MixTape+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = A31716E024626485003AE0C2 /* MixTape+CoreDataProperties.swift */; };
 		A3AEC46424673BBA00A2FC23 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3AEC46324673BBA00A2FC23 /* Utils.swift */; };
+		A3AEC4662469124F00A2FC23 /* ImagePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3AEC4652469124F00A2FC23 /* ImagePickerView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -44,6 +45,7 @@
 		A31716DF24626485003AE0C2 /* MixTape+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MixTape+CoreDataClass.swift"; sourceTree = SOURCE_ROOT; };
 		A31716E024626485003AE0C2 /* MixTape+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MixTape+CoreDataProperties.swift"; sourceTree = SOURCE_ROOT; };
 		A3AEC46324673BBA00A2FC23 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
+		A3AEC4652469124F00A2FC23 /* ImagePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePickerView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -114,6 +116,7 @@
 			children = (
 				A31716D8246263B9003AE0C2 /* MixTapePicker.swift */,
 				A31716DA246263D6003AE0C2 /* MixTapeAdder.swift */,
+				A3AEC4652469124F00A2FC23 /* ImagePickerView.swift */,
 			);
 			path = Pickers;
 			sourceTree = "<group>";
@@ -203,6 +206,7 @@
 				A31716D624626391003AE0C2 /* PlayerStatusObserver.swift in Sources */,
 				A31716D42462637A003AE0C2 /* PlayerItemOberver.swift in Sources */,
 				A31716C124626300003AE0C2 /* Mixtapes.xcdatamodeld in Sources */,
+				A3AEC4662469124F00A2FC23 /* ImagePickerView.swift in Sources */,
 				A31716BC24626300003AE0C2 /* AppDelegate.swift in Sources */,
 				A31716E424626485003AE0C2 /* MixTape+CoreDataProperties.swift in Sources */,
 				A3AEC46424673BBA00A2FC23 /* Utils.swift in Sources */,

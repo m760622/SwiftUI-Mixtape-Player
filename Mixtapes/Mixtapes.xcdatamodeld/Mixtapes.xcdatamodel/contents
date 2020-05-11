@@ -3,6 +3,7 @@
     <entity name="MixTape" representedClassName="MixTape" syncable="YES">
         <attribute name="numberOfSongs" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="title" optional="YES" attributeType="String"/>
+        <attribute name="urlData" optional="YES" attributeType="Binary"/>
         <relationship name="songs" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Song" inverseName="mixTape" inverseEntity="Song"/>
     </entity>
     <entity name="Song" representedClassName="Song" syncable="YES">
@@ -12,7 +13,7 @@
         <relationship name="mixTape" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="MixTape" inverseName="songs" inverseEntity="MixTape"/>
     </entity>
     <elements>
-        <element name="MixTape" positionX="-9" positionY="36" width="128" height="88"/>
+        <element name="MixTape" positionX="-9" positionY="36" width="128" height="103"/>
         <element name="Song" positionX="0" positionY="63" width="128" height="103"/>
     </elements>
 </model>

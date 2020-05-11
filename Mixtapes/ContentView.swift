@@ -19,6 +19,7 @@ struct ContentView: View {
     @State var isPlaying: Bool = false
     @State private var showingNowPlayingSheet: Bool = false
     @State var currentSongName: String = "Not Playing"
+    @State var currentMixTapeImage: URL  = URL.init(fileURLWithPath: "")
     @State var currentMixTapeName: String  = ""
     @State var currentPlayerItems: [AVPlayerItem] = []
     let queuePlayer: AVQueuePlayer
@@ -31,7 +32,7 @@ struct ContentView: View {
                 List {ForEach(mixTapes, id:\.wrappedTitle)
                     { tape in
                         NavigationLink(destination:
-                            MixTapeView(songs: tape.songsArray, mixTape: tape, currentPlayerItems: self.$currentPlayerItems, currentMixTapeName: self.$currentMixTapeName, currentSongName: self.$currentSongName, isPlaying: self.$isPlaying, queuePlayer: self.queuePlayer, currentStatusObserver: self.playerStatusObserver, currentItemObserver: self.playerItemObserver).environment(\.managedObjectContext, self.moc)
+                            MixTapeView(songs: tape.songsArray, mixTape: tape, currentPlayerItems: self.$currentPlayerItems, currentMixTapeName: self.$currentMixTapeName, currentMixTapeImage: self.$currentMixTapeImage, currentSongName: self.$currentSongName, isPlaying: self.$isPlaying, queuePlayer: self.queuePlayer, currentStatusObserver: self.playerStatusObserver, currentItemObserver: self.playerItemObserver).environment(\.managedObjectContext, self.moc)
                             ){
                                 Text(tape.wrappedTitle)
                             }
@@ -53,7 +54,7 @@ struct ContentView: View {
                 .padding([.vertical])
                 .sheet(isPresented: self.$showingNowPlayingSheet) {
                 
-                    PlayerView(isPlaying: self.$isPlaying, currentSongName: self.$currentSongName,  currentPlayerItems: self.$currentPlayerItems, currentMixTapeName: self.$currentMixTapeName, queuePlayer: self.queuePlayer, playerItemObserver: self.playerItemObserver, playerStatusObserver: self.playerStatusObserver)
+                    PlayerView(isPlaying: self.$isPlaying, currentSongName: self.$currentSongName,  currentPlayerItems: self.$currentPlayerItems, currentMixTapeName: self.$currentMixTapeName, currentMixTapeImage: self.$currentMixTapeImage, queuePlayer: self.queuePlayer, playerItemObserver: self.playerItemObserver, playerStatusObserver: self.playerStatusObserver)
                 }
         }
     }
@@ -81,7 +82,9 @@ struct NewMixTapeView: View {
     @FetchRequest(entity: MixTape.entity(), sortDescriptors: []) var mixTapes: FetchedResults<MixTape>
     @State var tapeTitle: String = ""
     @State private var showingDocsPicker: Bool = false
+    @State private var showingImagePicker: Bool = false
     @State var mixTapePicked: Bool = false
+    @State var imagePicked: Bool = false
     @Binding var isPresented: Bool
         
     var inValidName: Bool {
@@ -97,6 +100,7 @@ struct NewMixTapeView: View {
             }
             .disabled(mixTapePicked)
             
+            
             Section {
                 Button(action: { self.showingDocsPicker.toggle() }) {
                      Image(systemName: "folder.badge.plus").imageScale(.large)
@@ -105,7 +109,18 @@ struct NewMixTapeView: View {
                   MixTapePicker(nameofTape: self.tapeTitle, mixTapePicked: self.$mixTapePicked, moc: self.moc)
                  }
             }
-            .disabled(tapeTitle.isEmpty || inValidName)
+            .disabled(tapeTitle.isEmpty || inValidName || mixTapePicked)
+            
+            Section {
+                Button(action: { self.showingImagePicker.toggle() }) {
+//                     Image(systemName: "folder.badge.plus").imageScale(.large)
+                    Text("Add image")
+                 }
+                 .sheet(isPresented: self.$showingImagePicker) {
+                    ImagePickerView(mixTapes: self.mixTapes, moc: self.moc, imagePicked: self.$imagePicked)
+                 }
+            }
+            .disabled(imagePicked || !mixTapePicked)
             
             Section {
                 Button(action: { self.isPresented.toggle() }) {
@@ -167,6 +182,7 @@ struct MixTapeView: View {
     @State var mixTape: MixTape
     @Binding var currentPlayerItems: [AVPlayerItem]
     @Binding var currentMixTapeName: String
+    @Binding var currentMixTapeImage: URL
     @Binding var currentSongName: String
     @Binding var isPlaying: Bool
     let queuePlayer: AVQueuePlayer
@@ -183,6 +199,7 @@ struct MixTapeView: View {
                     Button(action: {
                         if self.currentMixTapeName != self.mixTape.wrappedTitle { //update currentMixTapeName
                             self.currentMixTapeName = self.mixTape.wrappedTitle
+                            self.currentMixTapeImage = self.mixTape.wrappedUrl
                         }
                         
                         let newPlayerItems = createArrayOfPlayerItems(songs: self.songs) //update currentPlayerItems array
@@ -328,6 +345,7 @@ struct PlayerView: View {
     @Binding var currentSongName: String
     @Binding var currentPlayerItems: [AVPlayerItem]
     @Binding var currentMixTapeName: String
+    @Binding var currentMixTapeImage: URL
     let queuePlayer: AVQueuePlayer
     let playerItemObserver: PlayerItemObserver
     let playerStatusObserver: PlayerStatusObserver
@@ -336,11 +354,21 @@ struct PlayerView: View {
     var body: some View {
         GeometryReader { geometry in
             VStack(spacing: 24) {
-                Image(systemName: "hifispeaker.fill")
-                .resizable()
-                .frame(width: geometry.size.width - 24, height: geometry.size.width - 24)
-                .cornerRadius(20)
-                .shadow(radius: 10)
+                if self.currentMixTapeName != "" {
+ 
+                Image(uiImage: getCoverArtImage(url: self.currentMixTapeImage))
+                     .resizable()
+                     .frame(width: geometry.size.width - 24, height: geometry.size.width - 24)
+                     .shadow(radius: 10)
+
+                } else {
+                    Image(systemName: "hifispeaker.fill")
+                    .resizable()
+                    .frame(width: geometry.size.width - 24, height: geometry.size.width - 24)
+                    .cornerRadius(20)
+                    .shadow(radius: 10)
+                }
+
                 
                 VStack {
                     Text(self.currentSongName)
@@ -465,3 +493,16 @@ struct PlayerView: View {
 
 
 
+extension UIImageView {
+    func load(url: URL) {
+        DispatchQueue.global().async { [weak self] in
+            if let data = try? Data(contentsOf: url) {
+                if let image = UIImage(data: data) {
+                    DispatchQueue.main.async {
+                        self?.image = image
+                    }
+                }
+            }
+        }
+    }
+}

@@ -20,4 +20,4 @@ including dealing with files in iOS and the app sandbox, persisting data using C
 
 ### Future Features/Improvements: 
 Theres a number of features and improvements to make that I hope to implement sometime like, a seeking bar to scrub through songs,
-support for album covers, and storing mixtapes and songs more efficiently. 
+support for picking cover art from camera roll not only files app, and storing mixtapes and songs more efficiently. 

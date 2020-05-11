@@ -20,9 +20,7 @@ struct MixTapePicker: UIViewControllerRepresentable {
     let moc: NSManagedObjectContext
 
     func makeUIViewController(context: UIViewControllerRepresentableContext<MixTapePicker>) -> UIDocumentPickerViewController {
-        let documentsDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        let picker = UIDocumentPickerViewController(documentTypes: [String(kUTTypeAudio),String(kUTTypeImage)], in: .open)
-        picker.directoryURL = documentsDir
+        let picker = UIDocumentPickerViewController(documentTypes: [String(kUTTypeAudio)], in: .open)
         picker.allowsMultipleSelection = true
         picker.delegate = context.coordinator
         return picker

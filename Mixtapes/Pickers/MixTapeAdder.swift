@@ -20,7 +20,7 @@ struct MixTapeAdder: UIViewControllerRepresentable {
     @Binding var songs: [Song]
     
     func makeUIViewController(context: UIViewControllerRepresentableContext<MixTapeAdder>) -> UIDocumentPickerViewController {
-        let picker = UIDocumentPickerViewController(documentTypes: [String(kUTTypeAudio),String(kUTTypeImage)], in: .open)
+        let picker = UIDocumentPickerViewController(documentTypes: [String(kUTTypeAudio)], in: .open)
         picker.allowsMultipleSelection = true
         picker.delegate = context.coordinator
         return picker
