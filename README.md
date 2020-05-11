@@ -19,5 +19,5 @@ without following a full tutorial, so im sure there are many improvements and op
 including dealing with files in iOS and the app sandbox, persisting data using CoreData, and building user interfaces with SwiftUI.
 
 ### Future Features/Improvements: 
-Theres a number of features and improvements to make that I hope to implement sometime like, a seeking bar to scrub through songs,
+Theres a number of features and improvements to make that I hope to implement sometime like, a seeking bar to scrub through songs, control playback with control center and lock screen,
 support for album covers, and storing mixtapes and songs more efficiently. 
