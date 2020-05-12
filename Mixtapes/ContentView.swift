@@ -16,15 +16,15 @@ struct ContentView: View {
     @Environment(\.managedObjectContext) var moc
     @FetchRequest(entity: MixTape.entity(), sortDescriptors: []) var mixTapes: FetchedResults<MixTape>
     @State private var showingDocsPicker: Bool = false
-    @State var isPlaying: Bool = false
     @State private var showingNowPlayingSheet: Bool = false
-    @State var currentSongName: String = "Not Playing"
     @State var currentMixTapeImage: URL = URL.init(fileURLWithPath: "")
     @State var currentMixTapeName: String  = ""
-    @State var currentPlayerItems: [AVPlayerItem] = []
     let queuePlayer: AVQueuePlayer
     let playerItemObserver: PlayerItemObserver
     let playerStatusObserver: PlayerStatusObserver
+    @ObservedObject var currentPlayerItems: CurrentPlayerItems
+    @ObservedObject var currentSongName: CurrentSongName
+    @ObservedObject var isPlaying: IsPlaying
     
     var body: some View {
         VStack {
@@ -32,7 +32,7 @@ struct ContentView: View {
                 List {ForEach(mixTapes, id:\.wrappedTitle)
                     { tape in
                         NavigationLink(destination:
-                            MixTapeView(songs: tape.songsArray, mixTape: tape, currentPlayerItems: self.$currentPlayerItems, currentMixTapeName: self.$currentMixTapeName, currentMixTapeImage: self.$currentMixTapeImage, currentSongName: self.$currentSongName, isPlaying: self.$isPlaying, queuePlayer: self.queuePlayer, currentStatusObserver: self.playerStatusObserver, currentItemObserver: self.playerItemObserver).environment(\.managedObjectContext, self.moc)
+                            MixTapeView(songs: tape.songsArray, mixTape: tape, currentMixTapeName: self.$currentMixTapeName, currentMixTapeImage: self.$currentMixTapeImage, queuePlayer: self.queuePlayer, currentStatusObserver: self.playerStatusObserver, currentItemObserver: self.playerItemObserver, currentPlayerItems: self.currentPlayerItems, currentSongName: self.currentSongName, isPlaying: self.isPlaying).environment(\.managedObjectContext, self.moc)
                             ){
                                 Text(tape.wrappedTitle)
                             }
@@ -50,11 +50,11 @@ struct ContentView: View {
                         }
                 )
             }
-            NowPlayingButtonView(showingNowPlayingSheet: $showingNowPlayingSheet, isPlaying: self.$isPlaying, currentSongName: self.$currentSongName, queuePlayer: self.queuePlayer, currentItemObserver: self.playerItemObserver)
+            NowPlayingButtonView(showingNowPlayingSheet: $showingNowPlayingSheet, queuePlayer: self.queuePlayer, currentItemObserver: self.playerItemObserver, currentSongName: self.currentSongName, isPlaying: self.isPlaying)
                 .padding([.vertical])
                 .sheet(isPresented: self.$showingNowPlayingSheet) {
                 
-                    PlayerView(isPlaying: self.$isPlaying, currentSongName: self.$currentSongName,  currentPlayerItems: self.$currentPlayerItems, currentMixTapeName: self.$currentMixTapeName, currentMixTapeImage: self.$currentMixTapeImage, queuePlayer: self.queuePlayer, playerItemObserver: self.playerItemObserver, playerStatusObserver: self.playerStatusObserver)
+                    PlayerView(currentMixTapeName: self.$currentMixTapeName, currentMixTapeImage: self.$currentMixTapeImage, queuePlayer: self.queuePlayer, playerItemObserver: self.playerItemObserver, playerStatusObserver: self.playerStatusObserver, currentPlayerItems: self.currentPlayerItems, currentSongName: self.currentSongName, isPlaying: self.isPlaying)
                 }
         }
     }
@@ -139,29 +139,29 @@ struct NowPlayingButtonView: View {
     // name and a play/pause button. Touching this button opens PlayerView in a sheet.
     
     @Binding var showingNowPlayingSheet: Bool
-    @Binding var isPlaying: Bool
-    @Binding var currentSongName: String
     let queuePlayer: AVQueuePlayer
     let currentItemObserver: PlayerItemObserver
+    @ObservedObject var currentSongName: CurrentSongName
+    @ObservedObject var isPlaying: IsPlaying
     
     var body: some View {
         HStack {
             Button(action: {self.showingNowPlayingSheet.toggle()}) {
                 HStack() {
                     Button(action: {
-                    if self.isPlaying{
+                        if self.isPlaying.value{
                         self.queuePlayer.pause()
                         
                     } else {
                         self.queuePlayer.play()
                     }
                     }) {
-                       Image(systemName: self.isPlaying ? "pause.fill" : "play.fill").imageScale(.large)
+                        Image(systemName: self.isPlaying.value ? "pause.fill" : "play.fill").imageScale(.large)
                     }
                     Spacer()
-                    Text(self.currentSongName)
+                    Text(self.currentSongName.name)
                         .onReceive(currentItemObserver.$currentItem) { item in
-                        self.currentSongName = getItemName(playerItem: item)
+                            self.currentSongName.name = getItemName(playerItem: item)
                     }
                }
                .padding()
@@ -180,14 +180,14 @@ struct MixTapeView: View {
     @Environment(\.managedObjectContext) var moc
     @State var songs: [Song]
     @State var mixTape: MixTape
-    @Binding var currentPlayerItems: [AVPlayerItem]
     @Binding var currentMixTapeName: String
     @Binding var currentMixTapeImage: URL
-    @Binding var currentSongName: String
-    @Binding var isPlaying: Bool
     let queuePlayer: AVQueuePlayer
     let currentStatusObserver: PlayerStatusObserver
     let currentItemObserver: PlayerItemObserver
+    @ObservedObject var currentPlayerItems: CurrentPlayerItems
+    @ObservedObject var currentSongName: CurrentSongName
+    @ObservedObject var isPlaying: IsPlaying
     
     @State private var showingDocsPicker = false
     
@@ -203,31 +203,31 @@ struct MixTapeView: View {
                         }
                         
                         let newPlayerItems = createArrayOfPlayerItems(songs: self.songs) //update currentPlayerItems array
-                        if self.currentPlayerItems != newPlayerItems {
-                             self.currentPlayerItems = newPlayerItems
+                        if self.currentPlayerItems.items != newPlayerItems {
+                            self.currentPlayerItems.items = newPlayerItems
                         }
                         
-                        if song == self.songs[0] && self.currentSongName == "Not Playing" {
-                            loadPlayer(arrayOfPlayerItems: self.currentPlayerItems, player: self.queuePlayer)
+                        if song == self.songs[0] && self.currentSongName.name == "Not Playing" {
+                            loadPlayer(arrayOfPlayerItems: self.currentPlayerItems.items, player: self.queuePlayer)
                             
-                        } else if song != self.songs[0] && self.currentSongName == "Not Playing" {
+                        } else if song != self.songs[0] && self.currentSongName.name == "Not Playing" {
                             let index = Int(song.positionInTape)
-                            let slicedArray =  self.currentPlayerItems[index...self.songs.count - 1]
+                            let slicedArray =  self.currentPlayerItems.items[index...self.songs.count - 1]
                             
                             loadPlayer(arrayOfPlayerItems: Array(slicedArray), player: self.queuePlayer)
                             
-                        } else if song == self.songs[0] && self.currentSongName != "Not Playing" {
+                        } else if song == self.songs[0] && self.currentSongName.name != "Not Playing" {
                             self.queuePlayer.pause()
                             self.queuePlayer.currentItem?.seek(to: CMTime.zero, completionHandler: nil)
                             
-                            loadPlayer(arrayOfPlayerItems: self.currentPlayerItems, player: self.queuePlayer)
+                            loadPlayer(arrayOfPlayerItems: self.currentPlayerItems.items, player: self.queuePlayer)
                             
-                        } else if song != self.songs[0] && self.currentSongName != "Not Playing" {
+                        } else if song != self.songs[0] && self.currentSongName.name != "Not Playing" {
                             self.queuePlayer.pause()
                             self.queuePlayer.currentItem?.seek(to: CMTime.zero, completionHandler: nil)
                             
                             let index = Int(song.positionInTape)
-                            let slicedArray =  self.currentPlayerItems[index...self.songs.count - 1]
+                            let slicedArray =  self.currentPlayerItems.items[index...self.songs.count - 1]
                             loadPlayer(arrayOfPlayerItems: Array(slicedArray), player: self.queuePlayer)
                         }
                         self.queuePlayer.play()
@@ -236,7 +236,7 @@ struct MixTapeView: View {
                         Text(song.wrappedName)
                             .onReceive(self.currentStatusObserver.$playerStatus)
                                 { status in
-                                    self.isPlaying = getIsPlaying(status: status)
+                                    self.isPlaying.value = getIsPlaying(status: status)
                                 }
                         }
                         .disabled(!checkSongUrlIsReachable(song: song))
@@ -256,7 +256,7 @@ struct MixTapeView: View {
                         Image(systemName: "plus").imageScale(.large)
                         }
                         .sheet(isPresented: self.$showingDocsPicker) {
-                            MixTapeAdder(moc: self.moc, mixTapeToAddTo: self.mixTape, currentPlayerItems: self.$currentPlayerItems, songs: self.$songs)
+                            MixTapeAdder(moc: self.moc, mixTapeToAddTo: self.mixTape, songs: self.$songs)
                         }
                         Button(action: {}) {
                             EditButton()
@@ -324,15 +324,14 @@ struct PlayerView: View {
     // This view appears in a sheet triggerd by the NowPlayingButtonView, it displays name of current song and its mixtape,
     // and controlls for play/pause and skip forward/backward.
     
-    @Binding var isPlaying: Bool
-    @Binding var currentSongName: String
-    @Binding var currentPlayerItems: [AVPlayerItem]
     @Binding var currentMixTapeName: String
     @Binding var currentMixTapeImage: URL
     let queuePlayer: AVQueuePlayer
     let playerItemObserver: PlayerItemObserver
     let playerStatusObserver: PlayerStatusObserver
-    
+    @ObservedObject var currentPlayerItems: CurrentPlayerItems
+    @ObservedObject var currentSongName: CurrentSongName
+    @ObservedObject var isPlaying: IsPlaying
     
     var body: some View {
         GeometryReader { geometry in
@@ -353,76 +352,14 @@ struct PlayerView: View {
 
                 
                 VStack {
-                    Text(self.currentSongName)
+                    Text(self.currentSongName.name)
                             .font(Font.system(.title).bold())
                     Text(self.currentMixTapeName)
                         .font(Font.system(.title))
                 }
                
                 HStack(spacing: 40) {
-                    Button(action: {
-                        
-                        if self.currentPlayerItems != [] && self.currentSongName != "Not Playing" {
-                            if self.currentSongName == getArrayOfSongNames(arrayOfPlayerItems: self.currentPlayerItems)[0] {
-                                self.queuePlayer.currentItem?.seek(to: CMTime.zero, completionHandler: nil)
-                                
-                            } else {
-                                
-                                if self.isPlaying {
-                                    if self.queuePlayer.currentTime() < CMTimeMake(value: 3, timescale: 1) {
-                                        self.queuePlayer.pause()
-                                        self.queuePlayer.currentItem?.seek(to: CMTime.zero, completionHandler: nil)
-                                        var index = self.currentPlayerItems.firstIndex(of: self.queuePlayer.currentItem!)! - 1
-                                        
-                                        if !checkItemUrlIsReachable(playerItem: self.currentPlayerItems[index]) {
-                                            // if the prevoius song's url is not reachable then get the song prevous to that
-                                            index -= 1
-                                            if index < 0 {
-                                                // if index is negative that means the first song's url was unreachable, so just restart
-                                                // the current song
-                                                self.queuePlayer.currentItem?.seek(to: CMTime.zero, completionHandler: nil)
-                                                self.queuePlayer.play()
-                                            } else {
-                                                let slicedArray = self.currentPlayerItems[index...self.currentPlayerItems.count - 1]
-                                                loadPlayer(arrayOfPlayerItems: Array(slicedArray), player: self.queuePlayer)
-                                                self.queuePlayer.play()
-                                            }
-                                        } else {
-                                            let slicedArray = self.currentPlayerItems[index...self.currentPlayerItems.count - 1]
-                                            loadPlayer(arrayOfPlayerItems: Array(slicedArray), player: self.queuePlayer)
-                                            self.queuePlayer.play()
-                                        }
-
-                                    } else {
-                                        self.queuePlayer.currentItem?.seek(to: CMTime.zero, completionHandler: nil)
-                                    }
-                                    
-                                } else {
-
-                                    self.queuePlayer.currentItem?.seek(to: CMTime.zero, completionHandler: nil)
-                                    var index = getArrayOfSongNames(arrayOfPlayerItems: self.currentPlayerItems).firstIndex(of: self.currentSongName)! - 1
-                                    
-                                    if !checkItemUrlIsReachable(playerItem: self.currentPlayerItems[index]) {
-                                    // if the prevoius song's url is not reachable then get the song prevous to that
-                                        index -= 1
-                                        if index < 0 {
-                                        // if index is negative that means the first song's url was unreachable, so just restart
-                                        // the current song
-                                            self.queuePlayer.currentItem?.seek(to: CMTime.zero, completionHandler: nil)
-                                            
-                                        } else {
-                                            let slicedArray = self.currentPlayerItems[index...self.currentPlayerItems.count - 1]
-                                            loadPlayer(arrayOfPlayerItems: Array(slicedArray), player: self.queuePlayer)
-                                            
-                                        }
-                                    } else {
-                                        let slicedArray = self.currentPlayerItems[index...self.currentPlayerItems.count - 1]
-                                        loadPlayer(arrayOfPlayerItems: Array(slicedArray), player: self.queuePlayer)
-                                    }
-                                }
-                            }
-                        }
-                    }) {
+                    Button(action: { skipBack(currentPlayerItems: self.currentPlayerItems.items, currentSongName: self.currentSongName.name, queuePlayer: self.queuePlayer, isPlaying: self.isPlaying.value) }) {
                         ZStack {
                             Circle()
                                 .frame(width: 80, height: 80)
@@ -435,7 +372,7 @@ struct PlayerView: View {
                     }
 
                     Button(action: {
-                        if self.isPlaying {
+                        if self.isPlaying.value {
                             self.queuePlayer.pause()
                         } else {
                             self.queuePlayer.play()
@@ -447,7 +384,7 @@ struct PlayerView: View {
                                 .frame(width: 80, height: 80)
                                 .accentColor(.pink)
                                 .shadow(radius: 10)
-                            Image(systemName: self.isPlaying ? "pause.fill" : "play.fill").imageScale(.large)
+                            Image(systemName: self.isPlaying.value ? "pause.fill" : "play.fill").imageScale(.large)
                                 .foregroundColor(.white)
                                 .font(.system(.title))
                         }
@@ -472,3 +409,6 @@ struct PlayerView: View {
         }
     }
 }
+
+
+

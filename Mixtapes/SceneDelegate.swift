@@ -15,6 +15,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
     let player = AVQueuePlayer()
+    
+    // These properties must be observable objects so their values can be used in the views as well as here in
+    // scene view in "" for control center/lock screen skipping controls
+    @ObservedObject var currentPlayerItems: CurrentPlayerItems = CurrentPlayerItems()
+    @ObservedObject var currentSongName: CurrentSongName = CurrentSongName()
+    @ObservedObject var isPlaying: IsPlaying = IsPlaying()
 
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
@@ -30,7 +36,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let playerItemObserver = PlayerItemObserver(player: self.player)
         let playerStatusObserver = PlayerStatusObserver(player: self.player)
         self.setupRemoteTransportControls()
-
+g
         // Get the singleton instance.
           let audioSession = AVAudioSession.sharedInstance()
           do {
@@ -39,10 +45,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
           } catch {
               print("Failed to set audio session category.")
           }
-        
-        
 
-        let contentView = ContentView(queuePlayer: self.player, playerItemObserver: playerItemObserver, playerStatusObserver: playerStatusObserver).environment(\.managedObjectContext, context)
+        let contentView = ContentView(queuePlayer: self.player, playerItemObserver: playerItemObserver, playerStatusObserver: playerStatusObserver, currentPlayerItems: self.currentPlayerItems,currentSongName: self.currentSongName,isPlaying: self.isPlaying).environment(\.managedObjectContext, context)
 
         // Use a UIHostingController as window root view controller.
         if let windowScene = scene as? UIWindowScene {
@@ -110,7 +114,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // Add handler for Skip Command
         commandCenter.nextTrackCommand.addTarget { [unowned self] event in
             
-            if let item =  self.player.currentItem {
+            if let item = self.player.currentItem {
                 self.player.pause()
                 item.seek(to: CMTime.zero, completionHandler: nil)
                 self.player.advanceToNextItem()
@@ -120,6 +124,23 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             return .commandFailed
         }
         
+        commandCenter.previousTrackCommand.addTarget { [unowned self] event in
+            skipBack(currentPlayerItems: self.currentPlayerItems.items, currentSongName: self.currentSongName.name, queuePlayer: self.player, isPlaying: self.isPlaying.value)
+            return .success
+ 
+        }
     }
 }
+
+class CurrentPlayerItems: ObservableObject {
+    @Published var items: [AVPlayerItem] = []
+}
+class CurrentSongName: ObservableObject {
+    @Published var name: String = "Not Playing"
+}
+class IsPlaying: ObservableObject {
+    @Published var value: Bool = false
+}
+
+
 

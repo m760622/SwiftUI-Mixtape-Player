@@ -126,5 +126,70 @@ func getUrlFromPlayerItem(playerItem: AVPlayerItem) -> URL? {
     }
 }
 
+func skipBack(currentPlayerItems: [AVPlayerItem], currentSongName: String, queuePlayer: AVQueuePlayer, isPlaying: Bool) {
+    // Skips to previous song in mixtape 
+        
+    if currentPlayerItems != [] && currentSongName != "Not Playing" {
+        if currentSongName == getArrayOfSongNames(arrayOfPlayerItems: currentPlayerItems)[0] {
+            queuePlayer.currentItem?.seek(to: CMTime.zero, completionHandler: nil)
+            
+        } else {
+            
+            if isPlaying {
+                if queuePlayer.currentTime() < CMTimeMake(value: 3, timescale: 1) {
+                    queuePlayer.pause()
+                    queuePlayer.currentItem?.seek(to: CMTime.zero, completionHandler: nil)
+                    var index = currentPlayerItems.firstIndex(of: queuePlayer.currentItem!)! - 1
+                    
+                    if !checkItemUrlIsReachable(playerItem: currentPlayerItems[index]) {
+                        // if the prevoius song's url is not reachable then get the song prevous to that
+                        index -= 1
+                        if index < 0 {
+                            // if index is negative that means the first song's url was unreachable, so just restart
+                            // the current song
+                            queuePlayer.currentItem?.seek(to: CMTime.zero, completionHandler: nil)
+                            queuePlayer.play()
+                        } else {
+                            let slicedArray = currentPlayerItems[index...currentPlayerItems.count - 1]
+                            loadPlayer(arrayOfPlayerItems: Array(slicedArray), player: queuePlayer)
+                            queuePlayer.play()
+                        }
+                    } else {
+                        let slicedArray = currentPlayerItems[index...currentPlayerItems.count - 1]
+                        loadPlayer(arrayOfPlayerItems: Array(slicedArray), player: queuePlayer)
+                        queuePlayer.play()
+                    }
+
+                } else {
+                    queuePlayer.currentItem?.seek(to: CMTime.zero, completionHandler: nil)
+                }
+                
+            } else {
+
+                queuePlayer.currentItem?.seek(to: CMTime.zero, completionHandler: nil)
+                var index = getArrayOfSongNames(arrayOfPlayerItems: currentPlayerItems).firstIndex(of: currentSongName)! - 1
+                
+                if !checkItemUrlIsReachable(playerItem: currentPlayerItems[index]) {
+                // if the prevoius song's url is not reachable then get the song prevous to that
+                    index -= 1
+                    if index < 0 {
+                    // if index is negative that means the first song's url was unreachable, so just restart
+                    // the current song
+                        queuePlayer.currentItem?.seek(to: CMTime.zero, completionHandler: nil)
+                        
+                    } else {
+                        let slicedArray = currentPlayerItems[index...currentPlayerItems.count - 1]
+                        loadPlayer(arrayOfPlayerItems: Array(slicedArray), player: queuePlayer)
+                        
+                    }
+                } else {
+                    let slicedArray = currentPlayerItems[index...currentPlayerItems.count - 1]
+                    loadPlayer(arrayOfPlayerItems: Array(slicedArray), player: queuePlayer)
+                }
+            }
+        }
+    }
+}
+
 
 

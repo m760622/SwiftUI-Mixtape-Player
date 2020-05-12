@@ -9,6 +9,8 @@
 import Foundation
 import Combine
 import AVKit
+import MediaPlayer
+
 
 class PlayerItemObserver {
 
@@ -20,6 +22,10 @@ class PlayerItemObserver {
         
         itemObservation = player.publisher(for: \.currentItem).sink { item in
             self.currentItem = item
+            var nowPlayingInfo = [String : Any]()
+            nowPlayingInfo[MPMediaItemPropertyTitle] = getItemName(playerItem: item)
+            MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
+            
         }
     }
 }

@@ -16,7 +16,6 @@ struct MixTapeAdder: UIViewControllerRepresentable {
     
     let moc: NSManagedObjectContext
     let mixTapeToAddTo: MixTape
-    @Binding var currentPlayerItems: [AVPlayerItem]
     @Binding var songs: [Song]
     
     func makeUIViewController(context: UIViewControllerRepresentableContext<MixTapeAdder>) -> UIDocumentPickerViewController {
@@ -61,7 +60,6 @@ struct MixTapeAdder: UIViewControllerRepresentable {
                 
                 parent.mixTapeToAddTo.addToSongs(song)
                 parent.songs.append(song)
-                parent.currentPlayerItems.append(AVPlayerItem(url: url))
                 
                 counter += 1
             }
