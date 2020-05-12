@@ -36,7 +36,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let playerItemObserver = PlayerItemObserver(player: self.player)
         let playerStatusObserver = PlayerStatusObserver(player: self.player)
         self.setupRemoteTransportControls()
-g
+
         // Get the singleton instance.
           let audioSession = AVAudioSession.sharedInstance()
           do {

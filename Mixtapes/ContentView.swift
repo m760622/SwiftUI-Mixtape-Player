@@ -256,7 +256,7 @@ struct MixTapeView: View {
                         Image(systemName: "plus").imageScale(.large)
                         }
                         .sheet(isPresented: self.$showingDocsPicker) {
-                            MixTapeAdder(moc: self.moc, mixTapeToAddTo: self.mixTape, songs: self.$songs)
+                            MixTapeAdder(moc: self.moc, mixTapeToAddTo: self.mixTape, songs: self.$songs, currentPlayerItems: self.currentPlayerItems)
                         }
                         Button(action: {}) {
                             EditButton()
@@ -297,6 +297,8 @@ struct MixTapeView: View {
             moc.delete(song)
             self.songs.remove(at: index)
         }
+        
+        self.mixTape.numberOfSongs = Int16(self.songs.count)
         
         // update song's positionInTape property
         var counter: Int16 = 0

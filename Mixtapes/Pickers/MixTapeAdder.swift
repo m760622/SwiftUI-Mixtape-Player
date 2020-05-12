@@ -17,6 +17,7 @@ struct MixTapeAdder: UIViewControllerRepresentable {
     let moc: NSManagedObjectContext
     let mixTapeToAddTo: MixTape
     @Binding var songs: [Song]
+    @ObservedObject var currentPlayerItems: CurrentPlayerItems
     
     func makeUIViewController(context: UIViewControllerRepresentableContext<MixTapeAdder>) -> UIDocumentPickerViewController {
         let picker = UIDocumentPickerViewController(documentTypes: [String(kUTTypeAudio)], in: .open)
@@ -39,7 +40,7 @@ struct MixTapeAdder: UIViewControllerRepresentable {
         internal func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]){
             
             let songNames = getArrayOfSongNames(arrayOfSongs: parent.songs)
-            var counter = parent.mixTapeToAddTo.numberOfSongs + 1
+            var counter = parent.mixTapeToAddTo.numberOfSongs 
             
             for url in urls {
                 
