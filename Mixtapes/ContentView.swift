@@ -256,7 +256,7 @@ struct MixTapeView: View {
                         Image(systemName: "plus").imageScale(.large)
                         }
                         .sheet(isPresented: self.$showingDocsPicker) {
-                            MixTapeAdder(moc: self.moc, mixTapeToAddTo: self.mixTape, songs: self.$songs, currentPlayerItems: self.currentPlayerItems)
+                            MixTapeAdder(moc: self.moc, mixTapeToAddTo: self.mixTape, songs: self.$songs)
                         }
                         Button(action: {}) {
                             EditButton()

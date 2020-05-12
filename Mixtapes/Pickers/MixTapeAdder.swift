@@ -17,7 +17,6 @@ struct MixTapeAdder: UIViewControllerRepresentable {
     let moc: NSManagedObjectContext
     let mixTapeToAddTo: MixTape
     @Binding var songs: [Song]
-    @ObservedObject var currentPlayerItems: CurrentPlayerItems
     
     func makeUIViewController(context: UIViewControllerRepresentableContext<MixTapeAdder>) -> UIDocumentPickerViewController {
         let picker = UIDocumentPickerViewController(documentTypes: [String(kUTTypeAudio)], in: .open)
