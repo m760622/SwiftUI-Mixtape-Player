@@ -14,7 +14,9 @@ func getCoverArtImage(url: URL) -> UIImage {
     // returns a UIImage to display as cover art in PlayerView
     
     do {
+        url.startAccessingSecurityScopedResource()
         let imageData = try Data(contentsOf: url)
+        url.stopAccessingSecurityScopedResource()
         return UIImage(data: imageData)!
     } catch {
         return UIImage(systemName: "hifispeaker")!
@@ -25,7 +27,10 @@ func checkSongUrlIsReachable(song: Song) -> Bool {
     // Checks is url stored in song is still reachable, song at url could be renamed or deleted
     
     do {
-        let goodUrl = try song.wrappedUrl.checkResourceIsReachable()
+        let url = song.wrappedUrl
+        url.startAccessingSecurityScopedResource()
+        let goodUrl = try url.checkResourceIsReachable()
+        url.stopAccessingSecurityScopedResource()
        return goodUrl
     } catch {
         print(error)
@@ -38,7 +43,9 @@ func checkItemUrlIsReachable(playerItem: AVPlayerItem) -> Bool {
     
     if let url = getUrlFromPlayerItem(playerItem: playerItem) {
         do {
+            url.startAccessingSecurityScopedResource()
             let goodUrl = try url.checkResourceIsReachable()
+            url.stopAccessingSecurityScopedResource()
             return goodUrl
         } catch {
             print(error)
@@ -84,7 +91,9 @@ func createArrayOfPlayerItems(songs: [Song]) -> [AVPlayerItem] {
     var arrayOfPlayerItems: [AVPlayerItem] = []
     for song in songs {
         let songUrl = song.wrappedUrl
+        songUrl.startAccessingSecurityScopedResource()
         arrayOfPlayerItems.append(AVPlayerItem(url: songUrl))
+        songUrl.stopAccessingSecurityScopedResource()
     }
     return arrayOfPlayerItems
 }
